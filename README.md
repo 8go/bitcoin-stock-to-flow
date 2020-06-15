@@ -1,7 +1,7 @@
-# :star:  bitcoin-stock-to-flow  :star:
+# :star:   bitcoin-stock-to-flow  :star:
 Stock-to-Flow ratio and price for Bitcoin
 
-`s2f.py` is a small Python program to pull data from internet sources (messari.io and coinmetrics.io) to disply the Bitcoin stock-to-flow ratio and price. 
+`s2f.py` is a small 1-file-only Python program to pull data from internet sources (messari.io and coinmetrics.io) to disply the Bitcoin stock-to-flow ratio and price. 
 
 If desired rename `s2f.py` to `s2f`. 
 
@@ -35,4 +35,4 @@ Stock-to-flow ratio:          27.03
 Stock-to-flow price:          9,556 USD
 ```
 
-</> with  :heart:  and available on :octocat:
+</> with :heart:   and available on :octocat:. PRs welcome.

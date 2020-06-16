@@ -12,7 +12,7 @@ Stock-to-Flow (S2F, STF) is an economic model. Read more about it here:
 
 ### How to run?
 
-If desired rename `s2f.py` to `s2f`. Just type `s2f.py` into your terminal.
+If desired rename `s2f.py` to `s2f`. Just type `s2f.py` into your terminal. Try `s2f.py --help` to get help.
 
 Example output of `s2f.py`:
 

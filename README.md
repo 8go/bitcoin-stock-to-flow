@@ -1,7 +1,7 @@
 # :star:   bitcoin-stock-to-flow  :star:
 Stock-to-Flow ratio and price for Bitcoin
 
-`s2f.py` is a small 1-file-only Python program to pull data from internet sources (https://messari.io and https://coinmetrics.io) to disply the Bitcoin stock-to-flow ratio and price. 
+`s2f.py` is a small 1-file-only Python program to pull data from internet sources (https://messari.io and https://coinmetrics.io) to display the Bitcoin stock-to-flow ratio and price. 
 
 ### What is Bitcoin Stock-to-Flow?
 Stock-to-Flow (S2F, STF) is an economic model. Read more about it here:

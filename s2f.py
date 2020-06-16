@@ -5,7 +5,8 @@ import urllib.request
 import os
 import sys
 import logging
-
+import argparse
+import traceback
 
 def infoFromMessari():
     url = "https://data.messari.io/api/v1/assets/bitcoin/metrics"
@@ -46,29 +47,52 @@ def infoFromCoinMetrics(period):
     return stock_to_flow_ratio, stock_to_flow_usd
 
 
-if "DEBUG" in os.environ:
-    logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("s2f")
+def s2f(args):
+    # Why 463?
+    # See: https://twitter.com/digitaliknet/status/1270892084929626112?s=21
+    # was 365, then in June 2020 adjusted to 463 as 463 is the value fitting the curve best
+    period = 463
+    stock_to_flow_ratio, stock_to_flow_usd = infoFromCoinMetrics(period)
+    circulating, annual_inflation_percent, fwd_stock_to_flow, fwd_stock_to_flow_usd = infoFromMessari()
 
-# Why 463?
-# See: https://twitter.com/digitaliknet/status/1270892084929626112?s=21
-# was 365, then in June 2020 adjusted to 463 as 463 is the value fitting the curve best
-period = 463
-stock_to_flow_ratio, stock_to_flow_usd = infoFromCoinMetrics(period)
-circulating, annual_inflation_percent, fwd_stock_to_flow, fwd_stock_to_flow_usd = infoFromMessari()
-
-if len(sys.argv) > 1:
-    if sys.argv[1].lower() == "-v" or sys.argv[1].lower() == "--verbose":
-        print("This program prints the Bitcoin Stock-to-Flow ratio and price.")
+    if args.verbose:
         print("Read about Stock-to-Flow here:    {}".format("https://medium.com/@100trillionUSD/efficient-market-hypothesis-and-bitcoin-stock-to-flow-model-db17f40e6107"))
         print("Compare with Stock-to-Flow data:  {}".format("https://bitcoin.clarkmoody.com/dashboard/"))
         print("Compare with Stock-to-Flow graph: {}".format("https://digitalik.net/btc/"))
 
-print("Data sources:                 {}".format("messari.io and coinmetrics.io"))
-print("Calculated for date:          {}".format(datetime.date.today()))
-print("Circulating BTC:              {:,.0f} BTC".format(circulating))
-print("Annual inflation:             {:.2f} %".format(annual_inflation_percent))
-print("Forward stock-to-flow ratio:  {:.2f}".format(fwd_stock_to_flow))
-print("Forward stock-to-flow price:  {:,.0f} USD".format(fwd_stock_to_flow_usd))
-print("{}-day Stock-to-flow ratio:  {:.2f}".format(period, stock_to_flow_ratio))
-print("{}-day Stock-to-flow price:  {:,.0f} USD".format(period, stock_to_flow_usd))
+    if not args.terse: 
+        print("Data sources:                     {}".format("messari.io and coinmetrics.io"))
+        print("Calculated for date:              {}".format(datetime.date.today()))
+        print("Circulating BTC:                  {:,.0f} BTC".format(circulating))
+        print("Annual inflation:                 {:.2f} %".format(annual_inflation_percent))
+    print("Forward stock-to-flow ratio:      {:.2f}".format(fwd_stock_to_flow))
+    print("Forward stock-to-flow price:      {:,.0f} USD".format(fwd_stock_to_flow_usd))
+    print("{}-day Stock-to-flow ratio:      {:.2f}".format(period, stock_to_flow_ratio))
+    print("{}-day Stock-to-flow price:      {:,.0f} USD".format(period, stock_to_flow_usd))
+
+
+if __name__ == "__main__":
+    logging.basicConfig() # initialize root logger, a must
+    if "DEBUG" in os.environ:
+        logging.getLogger().setLevel(logging.DEBUG) # set log level on root logger
+    else:
+        logging.getLogger().setLevel(logging.INFO) # set log level on root logger
+
+    ap = argparse.ArgumentParser(description="This program prints the Bitcoin Stock-to-Flow ratio and price") # Construct the argument parser
+    # Add the arguments to the parser
+    ap.add_argument("-d", "--debug", required=False, action="store_true", help="Print debug information")
+    ap.add_argument("-v", "--verbose", required=False, action="store_true", help="Print verbose output")
+    ap.add_argument("-t", "--terse", required=False, action="store_true", help="Print only terse condensed output")
+    args = ap.parse_args()
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG) # set log level on root logger
+        logging.getLogger().info("Debug is turned on.")
+    logger = logging.getLogger("s2f")
+
+    try:
+        s2f(args)
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(1)

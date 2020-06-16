@@ -4,14 +4,15 @@ import json
 import urllib.request
 import os
 import sys
+import logging
+
 
 def infoFromMessari():
     url = "https://data.messari.io/api/v1/assets/bitcoin/metrics"
     req = urllib.request.Request(url)
     r = urllib.request.urlopen(req).read()
     cont = json.loads(r.decode('utf-8'))
-    if "DEBUG" in os.environ:
-       logger.debug("cont {}".format(cont))
+    logger.debug("cont {}".format(cont))
     fwd_stock_to_flow = cont['data']['supply']['stock_to_flow']
     # conservative formula: 0.18 * s2f^3.3
     # aggressive formula:  exp(-1.84) * s2f^3.36
@@ -19,8 +20,7 @@ def infoFromMessari():
     fwd_stock_to_flow_usd = 0.18 * fwd_stock_to_flow ** 3.3 # conservative formula: 0.18*s2f^3.3
     annual_inflation_percent = cont['data']['supply']['annual_inflation_percent']
     circulating = cont['data']['supply']['circulating']
-    if "DEBUG" in os.environ:
-       logger.debug("Data {} {} {} {}".format(fwd_stock_to_flow, fwd_stock_to_flow_usd, annual_inflation_percent, circulating))
+    logger.debug("Data {} {} {} {}".format(fwd_stock_to_flow, fwd_stock_to_flow_usd, annual_inflation_percent, circulating))
     # example output: Data 54.73928728956236 98097.8891323435 1.826841468925517 18410936.0981691
     return float(circulating), float(annual_inflation_percent), float(fwd_stock_to_flow), float(fwd_stock_to_flow_usd)
 
@@ -45,6 +45,11 @@ def infoFromCoinMetrics(period):
     stock_to_flow_usd = 0.18 * stock_to_flow_ratio ** 3.3
     return stock_to_flow_ratio, stock_to_flow_usd
 
+
+if "DEBUG" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("s2f")
+
 # Why 463?
 # See: https://twitter.com/digitaliknet/status/1270892084929626112?s=21
 # was 365, then in June 2020 adjusted to 463 as 463 is the value fitting the curve best
@@ -65,5 +70,5 @@ print("Circulating BTC:              {:,.0f} BTC".format(circulating))
 print("Annual inflation:             {:.2f} %".format(annual_inflation_percent))
 print("Forward stock-to-flow ratio:  {:.2f}".format(fwd_stock_to_flow))
 print("Forward stock-to-flow price:  {:,.0f} USD".format(fwd_stock_to_flow_usd))
-print("Stock-to-flow ratio:          {:.2f}".format(stock_to_flow_ratio))
-print("Stock-to-flow price:          {:,.0f} USD".format(stock_to_flow_usd))
+print("{}-day Stock-to-flow ratio:  {:.2f}".format(period, stock_to_flow_ratio))
+print("{}-day Stock-to-flow price:  {:,.0f} USD".format(period, stock_to_flow_usd))

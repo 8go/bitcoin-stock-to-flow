@@ -93,6 +93,9 @@ def s2f(args):
         "Forward stock-to-flow price:      {:,.0f} USD".format(fwd_stock_to_flow_usd))
     print("{}-day Stock-to-flow ratio:      {:.2f}".format(period, stock_to_flow_ratio))
     print("{}-day Stock-to-flow price:      {:,.0f} USD".format(period, stock_to_flow_usd))
+    print("Current price:                    {:,.0f} USD".format(usd_price))
+    print("Deviation of {}-day S2F price:   {:,.2f} %".format(period,
+                                                              (stock_to_flow_usd - usd_price) / stock_to_flow_usd * 100))
 
 
 if __name__ == "__main__":

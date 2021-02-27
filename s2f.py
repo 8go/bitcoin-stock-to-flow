@@ -146,8 +146,8 @@ def s2f(args):
 
 
 if __name__ == "__main__":
+    logging.basicConfig()  # initialize root logger, a must
     if "DEBUG" in os.environ:
-        logging.basicConfig()  # initialize root logger, a must
         logging.getLogger().setLevel(logging.DEBUG)  # set root logger log level
     else:
         logging.getLogger().setLevel(logging.INFO)  # set root logger log level

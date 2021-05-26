@@ -1,20 +1,46 @@
 #!/usr/bin/env python3
 
+"""Show Stock-to-Flow values for Bitcoin."""
+
 # Don't change tabbing, spacing, formating as file is automatically linted.
-# Ignore long lines
-# pylama:format=pep8:linters=pep8:ignore=E501
+#
+# Use this linter script:
+#
+# isort s2f.py
+# flake8  --max-line-length 88 --max-doc-length 79 s2f.py
+# python3 -m black s2f.py
+
 
 import argparse
 import datetime
 import logging
 import os
+import re
 import sys
 import traceback
 
 import requests
 
 
+def infoFromBitcoinblockhalf(proxies):
+    """Get Halving date from Bitcoinblockhalf."""
+    url = "https://bitcoinblockhalf.com"
+    cont = requests.get(url, proxies=proxies).content.decode()  # html
+    logger.debug(f"cont {cont}")
+    # HTML contains a line like this:
+    # Reward-Drop ETA date: <strong>06 May 2024 19:26:00 UTC</strong>
+    pattern = r"Reward-Drop ETA date: <strong>(.*?) ..:..:.. .*</strong>"
+    m = re.search(pattern, cont)
+    if m:
+        next_halving_date = m.group(1)
+    else:
+        next_halving_date = "unknown"
+    logger.debug(f"Estimate date of next halving: {next_halving_date}")
+    return next_halving_date
+
+
 def infoFromMessari(proxies):
+    """Get data from Messari."""
     url = "https://data.messari.io/api/v1/assets/bitcoin/metrics"
     cont = requests.get(url, proxies=proxies).json()
     logger.debug(f"cont {cont}")
@@ -43,7 +69,7 @@ def infoFromMessari(proxies):
 
 
 def btcSupplyOnDate(date, proxies):
-    """Provides BTC supply on a given date"""
+    """Provide BTC supply on a given date."""
     url = (
         "https://community-api.coinmetrics.io/"
         + "v2/assets/btc/metricdata?metrics=SplyCur&start="
@@ -57,6 +83,7 @@ def btcSupplyOnDate(date, proxies):
 
 
 def infoFromCoinMetrics(period, proxies):
+    """Compute Stock-to-Flow ratio and price."""
     dateYesterday = datetime.date.today() - datetime.timedelta(days=1)
     datePeriodInit = dateYesterday - datetime.timedelta(days=period)
     supplyYesterday = btcSupplyOnDate(dateYesterday, proxies)
@@ -70,7 +97,8 @@ def infoFromCoinMetrics(period, proxies):
 
 
 def s2f(args):
-    """Computes and prints the Stock-to-Flow ratio and price.
+    """Compute and print the Stock-to-Flow ratio and price.
+
     For ratio the 463-day Stock-to-Flow is used. Why 463?
     See: https://twitter.com/digitaliknet/status/1270892084929626112?s=21
     It was 365 days in a past formula, then in June 2020 adjusted to 463 as
@@ -119,7 +147,10 @@ def s2f(args):
         )
         print(f"Calculated for date:              {datetime.date.today()}")
         print(f"Circulating BTC:                  {circulating:,.0f} BTC")
-        print(f"Annual inflation:                 {annual_inflation_percent:.2f} %")
+        print("Annual inflation:                 " f"{annual_inflation_percent:.2f} %")
+        print(
+            "Estimated next halving date:      " f"{infoFromBitcoinblockhalf(proxies)}"
+        )
     if args.terse:
         labelForwRatio = "F/"
         labelForwPrice = "F$"

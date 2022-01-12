@@ -70,15 +70,41 @@ def infoFromMessari(proxies):
 
 def btcSupplyOnDate(date, proxies):
     """Provide BTC supply on a given date."""
+    # API v2 depreciated in 2022
+    # url = (
+    #     "https://community-api.coinmetrics.io/"
+    #     + "v2/assets/btc/metricdata?metrics=SplyCur&start="
+    #     + str(date)
+    #     + "&end="
+    #     + str(date)
+    # )
+    #
+    # HTTP API
+    # https://docs.coinmetrics.io/api/v4#operation/getTimeseriesAssetMetrics
+    # E.g.  get USD price for BTC:
+    # https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?
+    #    assets=btc&metrics=PriceUSD&frequency=1d&pretty=true&
+    #    start_time=2022-01-10T00:00:00Z&end_time=2022-01-10T00:00:00Z
+    # https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?
+    #    assets=btc&metrics=SplyCur&frequency=1d&pretty=true&
+    #    start_time=2022-01-10T00:00:00Z&end_time=2022-01-10T00:00:00Z
     url = (
         "https://community-api.coinmetrics.io/"
-        + "v2/assets/btc/metricdata?metrics=SplyCur&start="
+        + "v4/timeseries/asset-metrics?assets=btc&metrics=SplyCur&"
+        + "frequency=1d&start_time="
         + str(date)
-        + "&end="
+        + "&end_time="
         + str(date)
     )
     cont = requests.get(url, proxies=proxies).json()
-    supply = cont["metricData"]["series"][0]["values"][0]
+    # JSON Response:
+    #    {'data': [{'asset': 'btc', 'time': '2022-01-11T00:00:00.000000000Z',
+    #               'SplyCur': '18926306.29127818'}]}
+    logger.debug(
+        f"API URL call: {url} \n"
+        f"JSON Response: {cont}"
+    )
+    supply = cont["data"][0]["SplyCur"]
     return float(supply)
 
 
